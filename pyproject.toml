@@ -1,0 +1,17 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "python server for async0"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.15.2",
+    "asyncpg>=0.30.0",
+    "fastapi[standard]>=0.115.12",
+    "google-auth>=2.39.0",
+    "jose>=1.0.0",
+    "pydantic-settings>=2.8.1",
+    "pyjwt>=2.10.1",
+    "python-dotenv>=1.1.0",
+    "requests>=2.32.3",
+]
