@@ -20,7 +20,6 @@ COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/alembic.ini .
-COPY --from=builder /app/.env .
 
 ENV PYTHONUNBUFFERED=1 \
     UV_COMPILE_BYTECODE=1 \
