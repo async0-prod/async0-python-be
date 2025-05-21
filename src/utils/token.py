@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import jwt
 
 JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]

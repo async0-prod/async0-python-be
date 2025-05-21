@@ -7,7 +7,7 @@ from src.models.user import User
 from src.models.user_solution import UserSolution
 from src.schemas.submission import SubmissionBody
 
-submission_router = APIRouter(prefix="/submissions", tags=["Submission"])
+submission_router = APIRouter(prefix="/submission", tags=["Submission"])
 
 
 @submission_router.post("/")

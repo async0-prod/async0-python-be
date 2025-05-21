@@ -33,6 +33,7 @@ class Problem(Base):
     )
     starter_code: Mapped[str] = mapped_column(String)
     link: Mapped[str | None] = mapped_column(String, nullable=True)
+    rank: Mapped[int | None] = mapped_column(Integer, nullable=True, default=0)
     time_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
     memory_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(

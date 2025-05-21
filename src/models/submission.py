@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from .enum import Status
 from src.core.db import Base
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 if TYPE_CHECKING:
     from .user import User
