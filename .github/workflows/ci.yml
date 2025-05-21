@@ -51,7 +51,7 @@ jobs:
           file: ./Dockerfile.prod
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/async0-python-be:latest
-            ${{ secrets.DOCKER_USERNAME }}/async0-python-be:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/async0:python-latest
+            ${{ secrets.DOCKER_USERNAME }}/async0:python-${{ github.sha }}
           provenance: true
           sbom: true
