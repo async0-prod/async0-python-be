@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException
-from pydantic import BaseModel, Field, UUID4
-from sqlalchemy import UUID, Integer, String, bindparam, text
+from pydantic import BaseModel, Field
+from sqlalchemy import Integer, String, bindparam, text
+from sqlalchemy.dialects.postgresql import UUID as pUUID
 from src.models.user import User
 from src.dependencies.admin import get_current_admin_user
 from src.dependencies.core import DBSessionDep
@@ -28,8 +29,8 @@ class ProblemCreateRequest(BaseModel):
     rank: int | None = None
     time_limit: int | None = None
     memory_limit: int | None = None
-    topicId: UUID4
-    listId: UUID4
+    topicId: str
+    listId: str
     testcases: list[TestCaseModel] = Field(default_factory=list)
 
 
@@ -41,8 +42,8 @@ class ProblemUpdateRequest(BaseModel):
     link: str | None = None
     time_limit: int | None = None
     memory_limit: int | None = None
-    topicId: UUID4
-    listId: UUID4
+    topicId: str
+    listId: str
     testcases: list[TestCaseModel] = Field(default_factory=list)
 
 
@@ -115,6 +116,98 @@ async def get_problems(
     return problems
 
 
+@problem_router.get("/{problem_id}", status_code=status.HTTP_200_OK)
+async def get_problem(
+    problem_id: str,
+    session: DBSessionDep,
+    admin: User | None = Depends(get_current_admin_user),
+):
+    if admin is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized role"
+        )
+
+    sql = text(
+        """
+        SELECT json_build_object(
+            'id', p.id,
+            'name', p.name,
+            'description', p.description,
+            'difficulty', p.difficulty,
+            'starter_code', p.starter_code,
+            'link', p.link,
+            'time_limit', p.time_limit,
+            'memory_limit', p.memory_limit,
+            'created_at', p.created_at,
+            'updated_at', p.updated_at,
+            'rank', p.rank,
+            'testcase', COALESCE(tc.testcases, '[]'::json),
+            'topic_problem', COALESCE(tp.topics, '[]'::json),
+            'list_problem', COALESCE(lp.lists, '[]'::json),
+            'solution', COALESCE(sol.solutions, '[]'::json)
+        ) AS problem
+        FROM problem p
+        LEFT JOIN (
+            SELECT problem_id, json_agg(
+                json_build_object(
+                    'input', input,
+                    'output', output
+                )
+            ) AS testcases
+            FROM testcase
+            GROUP BY problem_id
+        ) tc ON tc.problem_id = p.id
+        LEFT JOIN (
+            SELECT tp.problem_id, json_agg(
+                json_build_object(
+                    'topic', json_build_object(
+                        'id', t.id,
+                        'name', t.name
+                    )
+                )
+            ) AS topics
+            FROM topic_problem tp
+            JOIN topic t ON tp.topic_id = t.id
+            GROUP BY tp.problem_id
+        ) tp ON tp.problem_id = p.id
+        LEFT JOIN (
+            SELECT lp.problem_id, json_agg(
+                json_build_object(
+                    'list', json_build_object(
+                        'id', l.id,
+                        'name', l.name
+                    )
+                )
+            ) AS lists
+            FROM list_problem lp
+            JOIN list l ON lp.list_id = l.id
+            GROUP BY lp.problem_id
+        ) lp ON lp.problem_id = p.id
+        LEFT JOIN (
+            SELECT problem_id, json_agg(
+                json_build_object(
+                    'code', code,
+                    'rank', rank
+                )
+            ) AS solutions
+            FROM solution
+            GROUP BY problem_id
+        ) sol ON sol.problem_id = p.id
+        WHERE p.id = :pid
+        """
+    ).bindparams(bindparam("pid", type_=pUUID))
+
+    result = await session.execute(sql, {"pid": problem_id})
+    problem = result.scalar_one_or_none()
+
+    if not problem:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Problem not found"
+        )
+
+    return problem
+
+
 @problem_router.delete("/{problem_id}", status_code=status.HTTP_200_OK)
 async def delete_problem(
     problem_id: str,
@@ -131,7 +224,7 @@ async def delete_problem(
         DELETE FROM problem
         WHERE id = :problem_id
         """
-    ).bindparams(bindparam("problem_id", type_=UUID))
+    ).bindparams(bindparam("problem_id", type_=pUUID))
 
     await session.execute(sql, {"problem_id": problem_id})
 
