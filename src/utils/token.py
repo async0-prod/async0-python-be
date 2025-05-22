@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 import jwt
 
+
 JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 JWT_SECRET_KEY_ADMIN = os.environ["JWT_SECRET_KEY_ADMIN"]
 JWT_ALGORITHM = "HS256"

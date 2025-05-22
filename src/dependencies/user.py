@@ -7,13 +7,15 @@ from src.dependencies.core import DBSessionDep
 
 async def get_current_user(request: Request, db: DBSessionDep):
     token = ""
+    print(token)
+
     auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-        if not token:
-            raise HTTPException(
-                status_code=401, detail="Access token missing or invalid"
-            )
+    if auth_header is None or not auth_header.startswith("Bearer "):
+        return None
+
+    token = auth_header.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     payload = decode_access_token(token)
     if payload is None:
