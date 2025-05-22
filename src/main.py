@@ -1,13 +1,10 @@
-from dotenv import load_dotenv
-
-load_dotenv()
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
 from src.routers.user import user_router
 from src.routers.admin import admin_router
 from src.core.db import sessionmanager
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 
 
 @asynccontextmanager

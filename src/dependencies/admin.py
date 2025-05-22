@@ -9,12 +9,15 @@ from src.dependencies.core import DBSessionDep
 async def get_current_admin_user(request: Request, db: DBSessionDep):
     token = ""
     auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-        if not token:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Token not available"
-            )
+    if auth_header is None or not auth_header.startswith("Bearer "):
+        return None
+
+    token = auth_header.split(" ")[1]
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+        )
+
     payload = decode_admin_access_token(token)
     if payload is None:
         raise HTTPException(
@@ -26,7 +29,7 @@ async def get_current_admin_user(request: Request, db: DBSessionDep):
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Not authorized"
         )
 
     if user.role != UserRoles.ADMIN:

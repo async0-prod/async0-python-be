@@ -2,7 +2,9 @@ import os
 from typing import Optional
 from datetime import datetime, timedelta
 import jwt
+from dotenv import load_dotenv
 
+load_dotenv()
 
 JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
 JWT_SECRET_KEY_ADMIN = os.environ["JWT_SECRET_KEY_ADMIN"]

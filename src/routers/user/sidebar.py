@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy import bindparam, text
+from fastapi import APIRouter
+from sqlalchemy import text
 
 from src.dependencies.core import DBSessionDep
-from src.dependencies.user import get_current_user
-from src.models.user import User
 
 sidebar_router = APIRouter(prefix="/sidebar", tags=["Sidebar"])
 

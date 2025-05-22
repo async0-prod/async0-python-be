@@ -67,7 +67,15 @@ class DatabaseSessionManager:
             await session.close()
 
 
-sessionmanager = DatabaseSessionManager(os.environ["DATABASE_URL"])
+sessionmanager = DatabaseSessionManager(
+    os.environ["DATABASE_URL"],
+    engine_kwargs={
+        "pool_size": 10,
+        "pool_pre_ping": True,
+        "max_overflow": 0,
+        "future": True,
+    },
+)
 
 
 async def get_db_session():
