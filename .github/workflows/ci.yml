@@ -55,3 +55,53 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/async0:python-${{ github.sha }}
           provenance: true
           sbom: true
+
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      packages: write
+    needs:
+      - build-and-push
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Write env files
+        run: |
+          echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./envfile
+
+          cat << 'EOF' > ./pyserver.env
+          ${{ secrets.PYSERVER_ENV_VARS }}
+          EOF
+
+      - name: Copy py env files
+        uses: appleboy/scp-action@v1
+        with:
+          host: async0.com
+          username: deploy
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "pyserver.env"
+          target: /home/deploy
+
+      - name: Create docker config for pyserver
+        uses: appleboy/ssh-action@v1
+        with:
+          host: async0.com
+          username: deploy
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            docker config rm pyserver-config
+            docker config create pyserver-config ./pyserver.env
+
+            rm -f ./pyserver.env
+
+      - name: Stack Update
+        uses: appleboy/ssh-action@v1
+        with:
+          host: async0.com
+          username: deploy
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            docker service update --image grvbrk/async0:python-${{ github.sha }} async0_pyserver
