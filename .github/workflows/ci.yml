@@ -53,6 +53,9 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/async0:python-latest
             ${{ secrets.DOCKER_USERNAME }}/async0:python-${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           provenance: true
           sbom: true
 
